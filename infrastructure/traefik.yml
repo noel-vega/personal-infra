@@ -1,0 +1,31 @@
+api:
+  dashboard: true
+  insecure: true  # Dashboard on :8080 (remove in production)
+
+entryPoints:
+  web:
+    address: ":80"
+    http:
+      redirections:
+        entryPoint:
+          to: websecure
+          scheme: https
+          permanent: true
+  websecure:
+    address: ":443"
+
+providers:
+  docker:
+    exposedByDefault: false
+    network: infra
+
+certificatesResolvers:
+  letsencrypt:
+    acme:
+      email: noelvegajr94@gmail.com
+      storage: /acme.json
+      httpChallenge:
+        entryPoint: web
+
+log:
+  level: INFO

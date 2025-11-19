@@ -1,2 +1,4 @@
-certbot/
-registry-data/
+infrastructure/certbot/
+infrastructure/registry-data/
+infrastructure/auth/
+infrastructure/acme/

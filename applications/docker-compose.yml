@@ -1,0 +1,17 @@
+services:
+  blog:
+    image: registry.noelvega.dev/blog:latest
+    container_name: app-blog
+    networks:
+      - infra
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.blog.rule=Host(`blog.noelvega.dev`)"
+      - "traefik.http.routers.blog.entrypoints=websecure"
+      - "traefik.http.routers.blog.tls.certresolver=letsencrypt"
+      - "traefik.http.services.blog.loadbalancer.server.port=80"
+    restart: unless-stopped
+
+networks:
+  infra:
+    external: true

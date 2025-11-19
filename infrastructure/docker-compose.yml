@@ -1,0 +1,44 @@
+version: '3'
+
+services:
+  traefik:
+    image: traefik:v3.6
+    container_name: infra-traefik
+    ports:
+      - "80:80"
+      - "443:443"
+      #- "8080:8080"  # Dashboard (optional, can remove in production)
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik.yml:/traefik.yml:ro
+      - ./acme.json:/acme.json
+      - ./auth:/auth:ro  # For registry basic auth
+    networks:
+      - infra
+    restart: unless-stopped
+
+  registry:
+    image: registry:2
+    container_name: infra-registry
+    environment:
+      - OTEL_TRACES_EXPORTER=none
+    volumes:
+      - ./registry-data:/var/lib/registry
+    networks:
+      - infra
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.registry.rule=Host(`registry.noelvega.dev`)"
+      - "traefik.http.routers.registry.entrypoints=websecure"
+      - "traefik.http.routers.registry.tls.certresolver=letsencrypt"
+      - "traefik.http.services.registry.loadbalancer.server.port=5000"
+      # Basic auth middleware
+      - "traefik.http.routers.registry.middlewares=registry-auth"
+      - "traefik.http.middlewares.registry-auth.basicauth.usersfile=/auth/htpasswd"
+    restart: unless-stopped
+
+networks:
+  infra:
+    name: infra
+    driver: bridge
+
