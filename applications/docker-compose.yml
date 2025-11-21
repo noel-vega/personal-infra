@@ -14,7 +14,7 @@ services:
 
   storage-api:
     image: registry.noelvega.dev/storage-api:main
-    container_name: app-storage
+    container_name: app-storage-api
     environment:
       - STORAGE_ROOT_PATH=/data/storage
     volumes:
@@ -23,10 +23,27 @@ services:
       - infra
     labels:
       - "traefik.enable=true"
-      - "traefik.http.routers.storage.rule=Host(`storage.noelvega.dev`)"
-      - "traefik.http.routers.storage.entrypoints=websecure"
-      - "traefik.http.routers.storage.tls.certresolver=letsencrypt"
-      - "traefik.http.services.storage.loadbalancer.server.port=5000"
+      - "traefik.http.routers.storage-api.rule=Host(`storage.noelvega.dev`) && PathPrefix(`/api`)"
+      - "traefik.http.routers.storage-api.entrypoints=websecure"
+      - "traefik.http.routers.storage-api.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.storage-api.priority=2"
+      - "traefik.http.middlewares.storage-api-stripprefix.stripprefix.prefixes=/api"
+      - "traefik.http.routers.storage-api.middlewares=storage-api-stripprefix"
+      - "traefik.http.services.storage-api.loadbalancer.server.port=5000"
+    restart: unless-stopped
+
+  storage-web:
+    image: registry.noelvega.dev/storage-web:main
+    container_name: app-storage-web
+    networks:
+      - infra
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.storage-web.rule=Host(`storage.noelvega.dev`)"
+      - "traefik.http.routers.storage-web.entrypoints=websecure"
+      - "traefik.http.routers.storage-web.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.storage-web.priority=1"
+      - "traefik.http.services.storage-web.loadbalancer.server.port=80"
     restart: unless-stopped
 
 networks:
