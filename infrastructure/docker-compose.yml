@@ -37,6 +37,22 @@ services:
       - "traefik.http.middlewares.registry-auth.basicauth.usersfile=/auth/htpasswd"
     restart: unless-stopped
 
+  hubble:
+    image: registry.noelvega.dev/hubble:main
+    container_name: hubble
+    networks:
+      - infra
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.hubble.rule=Host(`hubble.noelvega.dev`)"
+      - "traefik.http.routers.hubble.entrypoints=websecure"
+      - "traefik.http.routers.hubble.tls.certresolver=letsencrypt"
+      - "traefik.http.services.hubble.loadbalancer.server.port=5000"
+      # Basic auth middleware
+      - "traefik.http.routers.hubble.middlewares=hubble-auth"
+      - "traefik.http.middlewares.hubble-auth.basicauth.usersfile=/auth/htpasswd"
+    restart: unless-stopped
+
 networks:
   infra:
     name: infra
