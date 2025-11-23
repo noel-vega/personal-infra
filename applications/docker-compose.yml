@@ -23,6 +23,8 @@ services:
       - "traefik.http.routers.finances.entrypoints=websecure"
       - "traefik.http.routers.finances.tls.certresolver=letsencrypt"
       - "traefik.http.services.finances.loadbalancer.server.port=80"
+      - "traefik.http.routers.finances.middlewares=finances-auth"
+      - "traefik.http.middlewares.finances-auth.basicauth.usersfile=/auth/htpasswd"
     restart: unless-stopped
 
   storage-api:
